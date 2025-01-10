@@ -1,0 +1,6 @@
+setuptools==57.5.0
+Cython
+numpy==1.17.3
+choix==0.3.3
+tensorboardX==1.9
+protobuf==3.19.4
