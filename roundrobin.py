@@ -14,13 +14,13 @@ import numpy as np
 import choix
 
 args = dotdict({
-    'arenaCompare': 50,
+    'arenaCompare': 10,
     'arenaTemp': 0,
     'temp': 1,
     'tempThreshold': 10,
     # use zero if no montecarlo
     'numMCTSSims': 1000, #50
-    'cpuct': 4,#4
+    'cpuct': 1.1,#4
     'playRandom': False,
 })
 

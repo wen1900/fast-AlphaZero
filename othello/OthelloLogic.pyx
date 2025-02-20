@@ -122,6 +122,20 @@ cdef class Board():
                     count -= 1
         return count
 
+    def countStone(self, int color):
+        """Counts the # pieces of the given color
+        (1 for white, -1 for black, 0 for empty spaces)"""
+        cdef int count_color = 0
+        cdef int count_ncolor = 0
+        cdef Py_ssize_t x, y
+        for y in range(self.n):
+            for x in range(self.n):
+                if self.pieces[x,y]==color:
+                    count_color += 1
+                if self.pieces[x,y]==-color:
+                    count_ncolor += 1
+        return count_color, count_ncolor
+
     cpdef set get_legal_moves(self, int color):
         """Returns all the legal moves for the given color.
         (1 for white, -1 for black

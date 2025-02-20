@@ -62,6 +62,13 @@ class OthelloGame(Game):
             return 1
         return -1
 
+    def getStone(self, board, player):
+        b = Board(self.n)
+        b.pieces = np.copy(board)
+        Black, White = b.countStone(player)
+        winstone = b.countDiff(player)
+        return Black, White , winstone
+
     def getCanonicalForm(self, board, player):
         # return state if player==1, else return -state if player==-1
         return player*board

@@ -27,8 +27,8 @@ if __name__ == '__main__':
 
     # nnet players
     n1 = NNet(g)
-    n1.load_checkpoint('./roundrobin/', 'iteration-0200-mcts100.pkl')#('./checkpoint/', 'iteration-0200.pkl')
-    args1 = dotdict({'numMCTSSims': 1000, 'cpuct': 1.0}) #'numMCTSSims': 50, 'cpuct': 1.0
+    n1.load_checkpoint('./elo_estimate/', 'iteration-0200-mcts100.pkl')#('./checkpoint/', 'iteration-0200.pkl')
+    args1 = dotdict({'numMCTSSims': 1600, 'cpuct': 1.0}) #'numMCTSSims': 50, 'cpuct': 1.0
     mcts1 = MCTS(g, n1, args1)
 
     def n1p(x, turn):
@@ -42,8 +42,8 @@ if __name__ == '__main__':
 
 ############################################################################################################
     n2 = NNet(g)
-    n2.load_checkpoint('./roundrobin/', 'iteration-0160-mcts500.pkl')#('./checkpoint/', 'iteration-0100.pkl')
-    args2 = dotdict({'numMCTSSims': 1000, 'cpuct': 1.0}) #'numMCTSSims': 50, 'cpuct': 1.0
+    n2.load_checkpoint('./elo_estimate/', 'best-iteration-self-1920-mcts200.pkl')#('./checkpoint/', 'iteration-0100.pkl')
+    args2 = dotdict({'numMCTSSims': 1600, 'cpuct': 1.0}) #'numMCTSSims': 50, 'cpuct': 1.0
     mcts2 = MCTS(g, n2, args2)
 
     def n2p(x, turn):
@@ -53,8 +53,8 @@ if __name__ == '__main__':
         policy = mcts2.getActionProb(x, temp=temp)
         return np.random.choice(len(policy), p=policy)
 
-    #arena = Arena.Arena(n1p, n2p, g, display=display)
+    arena = Arena.Arena(n1p, n2p, g, display=display)
 
 ############################################################################################################
-    arena = Arena.Arena(hp, n1p, g, display=display)
-    print(arena.playGames(2, verbose=True))
+    #arena = Arena.Arena(n1p, hp, g, display=display)
+    print(arena.playGames(20, verbose=True))

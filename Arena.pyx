@@ -58,11 +58,15 @@ class Arena():
                 print(valids)
                 print()
                 assert valids[action] > 0
+            if verbose:
+                print(int(action / self.game.n), int(action % self.game.n))
             board, curPlayer = self.game.getNextState(board, curPlayer, action)
         if verbose:
             assert(self.display)
+            black, white, winstone = self.game.getStone(board, 1)
             print("Game over: Turn ", str(it), "Result ",
                   str(self.game.getGameEnded(board, 1)))
+            print("Black: ", black, "White: ", white, "WinStone: ", winstone)
             self.display(board)
         return self.game.getGameEnded(board, 1)
 
@@ -126,3 +130,86 @@ class Arena():
         bar.finish()
 
         return oneWon, twoWon, draws
+    def playGames_elo(self, num, elo_A, elo_B, verbose=False): #計算elo，第一次對局(同時更新 新舊模型)
+        """
+        Plays num games in which player1 starts num/2 games and player2 starts
+        num/2 games.
+
+        Returns:
+            oneWon: games won by player1
+            twoWon: games won by player2
+            draws:  games won by nobody
+        """
+        eps_time = AverageMeter()
+        bar = Bar('Arena.playGames', max=num)
+        end = time.time()
+        eps = 0
+        maxeps = int(num)
+
+        num = int(num/2)
+        oneWon = 0
+        twoWon = 0
+        draws = 0
+        for i in range(num):
+            gameResult = self.playGame(verbose=verbose)
+            if gameResult == 1:
+                oneWon += 1
+                score_A = 1
+            elif gameResult == -1:
+                twoWon += 1
+                score_A = 0
+            else:
+                draws += 1
+                score_A = 0.5
+            # bookkeeping + plot progress
+
+            expected_A = 1 / (1 + 10 ** ((elo_B - elo_A) / 400))
+            expected_B = 1 / (1 + 10 ** ((elo_A - elo_B) / 400))
+            K = 32
+            elo_A = elo_A + K * (score_A - expected_A)
+            elo_B = elo_B + K * ((1 - score_A) - expected_B)
+
+            eps += 1
+            eps_time.update(time.time() - end)
+            end = time.time()
+            bar.suffix = '({eps}/{maxeps}) Winrate: {wr}%% | Eps Time: {et:.3f}s | Total: {total:} | ETA: {eta:}'.format(
+                eps=eps, maxeps=maxeps, et=eps_time.avg, total=bar.elapsed_td, eta=bar.eta_td,
+                wr=int(100*(oneWon+0.5*draws)/(oneWon+twoWon+draws)))
+            bar.next()
+
+        self.player1, self.player2 = self.player2, self.player1
+
+        for _ in range(num):
+            gameResult = self.playGame(verbose=verbose)
+            if gameResult == -1:
+                oneWon += 1
+                score_A = 1
+            elif gameResult == 1:
+                twoWon += 1
+                score_A = 0
+            else:
+                draws += 1
+                score_A = 0.5
+            # bookkeeping + plot progress
+
+            expected_A = 1 / (1 + 10 ** ((elo_B - elo_A) / 400))
+            expected_B = 1 / (1 + 10 ** ((elo_A - elo_B) / 400))
+            K = 32
+            elo_A = elo_A + K * (score_A - expected_A)
+            elo_B = elo_B + K * ((1 - score_A) - expected_B)
+
+            eps += 1
+            eps_time.update(time.time() - end)
+            end = time.time()
+            bar.suffix = '({eps}/{maxeps}) Winrate: {wr}%% | Eps Time: {et:.3f}s | Total: {total:} | ETA: {eta:}'.format(
+                eps=eps, maxeps=maxeps, et=eps_time.avg, total=bar.elapsed_td, eta=bar.eta_td,
+                wr=int(100*(oneWon+0.5*draws)/(oneWon+twoWon+draws)))
+            bar.next()
+
+        elo = elo_A
+        prev_elo = elo_B
+        bar.update()
+        bar.finish()
+
+        return oneWon, twoWon, draws, elo, prev_elo
+
